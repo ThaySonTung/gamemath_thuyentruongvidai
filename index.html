@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HỌC TOÁN VỚI THẦY SƠN TÙNG - KHO BÁU ĐẢO TƯ DUY LỚP 5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-navy: #1a2536;
+            --color-clay: #c1791a;
+            --color-blue: #2980b9;
+            --color-green: #27ae60;
+            --color-red: #c0392b;
+            --color-yellow: #f1c40f;
+            --color-bg: #0d131d;
+            --color-card: #162130;
+            --color-text: #ffffff;
+            --color-chalkboard: #11261d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #confettiCanvas {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 980px;
+            min-height: 680px;
+            background: var(--color-navy);
+            border: 4px solid var(--color-clay);
+            border-radius: 20px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .game-container.survival-mode {
+            border-color: var(--color-red);
+            box-shadow: 0 0 35px rgba(192, 57, 43, 0.8);
+            animation: pulse-border 1s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: var(--color-red); }
+            100% { border-color: #e74c3c; }
+        }
+
+        /* HEADER & BRAND GLOW EFFECT */
+        .header {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-name {
+            font-weight: 900;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #f1c40f, #e74c3c, #2ecc71, #3498db, #f1c40f);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowGlow 4s linear infinite;
+            text-shadow: 0 0 12px rgba(241, 196, 15, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes rainbowGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-value {
+            color: var(--color-yellow);
+            font-size: 1.15rem;
+        }
+
+        .btn-audio {
+            background: var(--color-blue);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .screen {
+            display: none;
+            padding: 20px 25px;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .screen.active { display: flex; }
+
+        .game-title {
+            font-size: 2.2rem;
+            color: var(--color-yellow);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            text-shadow: 2px 3px 0 #000;
+        }
+
+        .rules-board {
+            background: var(--color-card);
+            border-radius: 15px;
+            padding: 16px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+            text-align: left;
+            border: 2px solid rgba(255,255,255,0.08);
+        }
+
+        .rules-title {
+            font-size: 1.1rem;
+            color: var(--color-clay);
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .rounds-list {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .round-card {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 10px;
+            border-left: 4px solid var(--color-blue);
+        }
+
+        .round-card.r5 { border-left-color: var(--color-red); }
+        .round-card h4 { font-size: 0.85rem; color: #fff; margin-bottom: 4px; font-weight: 900; }
+        .round-card p { font-size: 0.72rem; color: #a0aec0; line-height: 1.2; }
+
+        .btn-primary {
+            background: var(--color-green);
+            color: white;
+            font-size: 1.35rem;
+            font-weight: 900;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1e824c;
+            transition: all 0.1s;
+        }
+
+        .btn-primary:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #1e824c;
+        }
+
+        /* BẢN ĐỒ TIẾN TRÌNH */
+        .map-wrapper {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .map-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--color-clay);
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .island-nodes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .island-nodes::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 30px; right: 30px;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            z-index: 1;
+        }
+
+        .island-node {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: var(--color-card);
+            border: 3px solid #7f8c8d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .island-node.active {
+            border-color: var(--color-yellow);
+            background: var(--color-blue);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--color-yellow);
+        }
+
+        .island-node.completed {
+            border-color: var(--color-green);
+            background: var(--color-green);
+        }
+
+        /* BẢNG PHẤN HẢI TẶC */
+        .chalkboard-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 12px;
+            border-radius: 15px;
+            padding: 6px;
+            background: #5c3a21;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+
+        .chalkboard-container.fire-combo {
+            box-shadow: 0 0 25px #f1c40f, 0 0 40px #e74c3c;
+            animation: flame-pulse 0.8s infinite alternate;
+        }
+
+        @keyframes flame-pulse {
+            0% { filter: drop-shadow(0 0 10px #f1c40f); }
+            100% { filter: drop-shadow(0 0 25px #e74c3c); }
+        }
+
+        .question-box {
+            background: var(--color-chalkboard);
+            width: 100%;
+            padding: 20px 22px;
+            border-radius: 10px;
+            font-family: 'Patrick Hand', 'Nunito', cursive;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.5;
+            color: #f5f6fa;
+            border: 2px dashed rgba(255,255,255,0.2);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.15);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: var(--color-blue);
+            border-color: var(--color-blue);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.disabled {
+            opacity: 0.2;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+
+        .option-prefix {
+            background: rgba(255,255,255,0.2);
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .lifelines-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .btn-lifeline {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--color-clay);
+            color: var(--color-yellow);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-lifeline:hover:not(.used) {
+            background: var(--color-clay);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-lifeline.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #7f8c8d;
+            color: #7f8c8d;
+        }
+
+        .mascot-container {
+            position: absolute;
+            bottom: 10px; right: 15px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .mascot-speech {
+            background: white;
+            color: #232b3e;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            max-width: 220px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+            display: none;
+        }
+
+        .mascot-speech::after {
+            content: '';
+            position: absolute;
+            right: -8px; bottom: 12px;
+            border-width: 6px 0 6px 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent white;
+        }
+
+        .mascot-avatar-wrapper {
+            width: 85px; height: 85px;
+            border-radius: 50%;
+            border: 3px solid var(--color-yellow);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            overflow: hidden;
+            background: #1c2333;
+        }
+
+        .mascot-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        .wheel-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .wheel-modal.active { display: flex; }
+
+        .wheel-box {
+            position: relative;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            border: 8px solid var(--color-yellow);
+            overflow: hidden;
+            transition: transform 3s cubic-bezier(0.15, 0.99, 0.18, 1);
+            box-shadow: 0 0 30px var(--color-yellow);
+        }
+
+        .wheel-pointer {
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 25px solid var(--color-red);
+            position: absolute; top: 18%; z-index: 110;
+        }
+
+        .btn-spin {
+            margin-top: 20px;
+            background: var(--color-green);
+            color: white; font-weight: 900; font-size: 1.2rem;
+            padding: 10px 30px; border: none; border-radius: 30px; cursor: pointer;
+        }
+
+        .end-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px; width: 100%; max-width: 880px; text-align: left;
+        }
+
+        .end-card {
+            background: var(--color-card);
+            border-radius: 15px; padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .end-title { font-size: 2rem; color: var(--color-yellow); margin-bottom: 5px; }
+        .final-score { font-size: 3.2rem; font-weight: 900; color: var(--color-green); margin: 5px 0; }
+        .rank-badge { font-size: 1rem; color: #fff; margin-bottom: 12px; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; display: inline-block; }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
+        .name-input {
+            flex: 1; padding: 10px 15px; border-radius: 8px; border: 2px solid var(--color-blue);
+            background: rgba(0,0,0,0.3); color: white; font-weight: bold; outline: none;
+        }
+        .btn-save { background: var(--color-clay); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .leaderboard-title { font-size: 1.1rem; font-weight: 900; color: var(--color-yellow); margin-bottom: 10px; }
+        .leaderboard-list { list-style: none; }
+        .leaderboard-item {
+            background: rgba(255,255,255,0.05); margin-bottom: 6px; padding: 8px 12px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem;
+        }
+
+        @media (max-width: 820px) {
+            .rounds-list { grid-template-columns: repeat(2, 1fr); }
+            .options-grid { grid-template-columns: 1fr; }
+            .end-layout { grid-template-columns: 1fr; }
+            .mascot-container { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<div class="game-container" id="gameContainer">
+    <header class="header">
+        <div class="brand-logo">
+            <div class="brand-name">HỌC TOÁN VỚI THẦY SƠN TÙNG</div>
+        </div>
+        <div class="header-controls">
+            <div class="stat-box">🪙 <span class="stat-value" id="goldDisplay">0</span></div>
+            <div class="stat-box">🔥 <span class="stat-value" id="streakDisplay">0</span></div>
+            <div class="stat-box">⏱️ <span class="stat-value" id="totalTimer">10:00</span></div>
+            <button class="btn-audio" id="audioToggle" onclick="toggleAudio()">🔊 Âm Thanh: BẬT</button>
+        </div>
+    </header>
+
+    <!-- Màn hình Bắt Đầu -->
+    <main class="screen active" id="startScreen">
+        <h1 class="game-title">🏴‍☠️ KHO BÁU ĐẢO TƯ DUY LỚP 5 🏴‍☠️</h1>
+        
+        <div class="rules-board">
+            <div class="rules-title">🗺️ HÀNH TRÌNH CHINH PHỤC TOÁN TƯ DUY LỚP 5 (10:00)</div>
+            <div class="rounds-list">
+                <div class="round-card"><h4>🏝️ Đảo 1 (2 Phút)</h4><p>Khởi động (+10 Vàng)</p></div>
+                <div class="round-card"><h4>🗿 Đảo 2 (2 Phút)</h4><p>Bẫy Đá (+20 Vàng)</p></div>
+                <div class="round-card"><h4>🌋 Đảo 3 (2 Phút)</h4><p>Núi Lửa (+30/Sai -5)</p></div>
+                <div class="round-card"><h4>🌪️ Đảo 4 (2 Phút)</h4><p>Bão Tố (+40/Sai -10)</p></div>
+                <div class="round-card r5"><h4>👑 Đảo 5 (2 Phút)</h4><p>SINH TỒN (+50/Sai -20)</p></div>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="startGame()">NHỔ ANH RA KHỎI BẾN</button>
+    </main>
+
+    <!-- Màn hình Chơi Game -->
+    <main class="screen" id="gameScreen">
+        <div class="map-wrapper">
+            <div class="map-title">📍 HÀNH TRÌNH TÌM VÀNG QUA CÁC ĐẢO TƯ DUY:</div>
+            <div class="island-nodes">
+                <div class="island-node active" id="node1">🏝️</div>
+                <div class="island-node" id="node2">🗿</div>
+                <div class="island-node" id="node3">🌋</div>
+                <div class="island-node" id="node4">🌪️</div>
+                <div class="island-node" id="node5">👑</div>
+            </div>
+        </div>
+
+        <div class="chalkboard-container" id="chalkboardBox">
+            <div class="question-box" id="questionText">Đang tải câu hỏi Lớp 5...</div>
+        </div>
+
+        <div class="options-grid" id="optionsGrid"></div>
+
+        <div class="lifelines-bar">
+            <button class="btn-lifeline" id="life5050" onclick="use5050()">🌓 50:50</button>
+            <button class="btn-lifeline" id="lifeFreeze" onclick="useFreeze()">⚓ Mỏ Neo Đóng Băng</button>
+            <button class="btn-lifeline" id="lifeHint" onclick="useHint()">👨‍✈️ Hỏi Thuyền Trưởng Sơn Tùng</button>
+        </div>
+
+        <div class="mascot-container">
+            <div class="mascot-speech" id="mascotSpeech">Tàu ta đã sẵn sàng! Cùng Thầy Sơn Tùng chinh phục Lớp 5 nào!</div>
+            <div class="mascot-avatar-wrapper">
+                <img id="mascotImg" class="mascot-img" src="./thay-son-tung.png" alt="Thầy Sơn Tùng" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3429/3429433.png'">
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Vòng Quay -->
+    <div class="wheel-modal" id="wheelModal">
+        <h2 style="color: var(--color-yellow); margin-bottom: 10px;">🎁 BÁU VẬT BIỂN CẢ: VÒNG QUAY MAY MẮN!</h2>
+        <div class="wheel-pointer"></div>
+        <div class="wheel-box" id="wheelBox">
+            <canvas id="wheelCanvas" width="260" height="260"></canvas>
+        </div>
+        <button class="btn-spin" id="btnSpin" onclick="spinWheel()">QUAY NGAY</button>
+    </div>
+
+    <!-- Màn hình Kết Thúc -->
+    <main class="screen" id="endScreen">
+        <div class="end-layout">
+            <div class="end-card">
+                <h2 class="end-title">🏆 CHINH PHỤC KHO BÁU!</h2>
+                <div class="final-score" id="finalScoreDisplay">0 Vàng</div>
+                <div class="rank-badge" id="rankBadge">Danh hiệu: Đang tính...</div>
+                
+                <div class="input-group" id="saveSection">
+                    <input type="text" id="playerName" class="name-input" placeholder="Nhập tên thuyền trưởng..." maxlength="20">
+                    <button class="btn-save" onclick="saveScore()">LƯU TÊN</button>
+                </div>
+                
+                <button class="btn-primary" onclick="resetGame()" style="margin-top: 10px; width: 100%;">TẢI THUYỀN MỚI</button>
+            </div>
+
+            <div class="end-card">
+                <div class="leaderboard-title">📜 BẢNG VÀNG THUYỀN TRƯỞNG LỚP 5</div>
+                <ul class="leaderboard-list" id="leaderboardList"></ul>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+/* ==========================================================
+   CANVAS CONFETTI
+   ========================================================== */
+const canvas = document.getElementById('confettiCanvas');
+const ctx = canvas.getContext('2d');
+let particles = []; let confettiAnimation = null;
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function launchConfetti() {
+    particles = []; const colors = ['#f1c40f', '#e74c3c', '#3b7dda', '#27ae60', '#e67e22'];
+    for (let i = 0; i < 150; i++) {
+        particles.push({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
+            size: Math.random() * 8 + 4, color: colors[Math.floor(Math.random() * colors.length)],
+            vy: Math.random() * 5 + 3, vx: Math.random() * 2 - 1
+        });
+    }
+    animateConfetti();
+}
+
+function animateConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => { p.y += p.vy; p.x += p.vx; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
+    particles = particles.filter(p => p.y < canvas.height);
+    if (particles.length > 0) confettiAnimation = requestAnimationFrame(animateConfetti);
+}
+
+function stopConfetti() { if (confettiAnimation) cancelAnimationFrame(confettiAnimation); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+/* ==========================================================
+   WEB AUDIO API SYSTEM
+   ========================================================== */
+class SoundEngine {
+    constructor() { this.ctx = null; this.muted = false; this.bgmTimer = null; this.bgmStep = 0; this.bpm = 110; }
+
+    init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    playCorrect() {
+        if (this.muted) return; this.init();
+        const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.25);
+    }
+
+    playWrong() {
+        if (this.muted) return; this.init();
+        const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, now); osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+        gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.3);
+    }
+
+    playTick() {
+        if (this.muted) return; this.init();
+        const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.type = 'square'; osc.frequency.setValueAtTime(750, now); gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.04);
+    }
+
+    startBGM() { if (this.bgmTimer) clearInterval(this.bgmTimer); this.bgmStep = 0; this.runBGMLoop(); }
+    setBGMTempo(bpm) { this.bpm = bpm; if (this.bgmTimer) { clearInterval(this.bgmTimer); this.runBGMLoop(); } }
+    stopBGM() { if (this.bgmTimer) clearInterval(this.bgmTimer); this.bgmTimer = null; }
+
+    runBGMLoop() {
+        const interval = (60 / this.bpm) * 1000 / 2;
+        const melody = [293.66, 329.63, 349.23, 392.00, 440.00, 392.00, 349.23, 329.63]; 
+        this.bgmTimer = setInterval(() => {
+            if (!this.muted) {
+                this.init(); const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(melody[this.bgmStep % melody.length], now);
+                gain.gain.setValueAtTime(0.03, now); gain.gain.exponentialRampToValueAtTime(0.001, now + (interval/1000) * 0.8);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + (interval/1000) * 0.8);
+                this.bgmStep++;
+            }
+        }, interval);
+    }
+}
+
+const sounds = new SoundEngine();
+function toggleAudio() {
+    sounds.muted = !sounds.muted;
+    document.getElementById('audioToggle').innerText = sounds.muted ? '🔇 Âm Thanh: TẮT' : '🔊 Âm Thanh: BẬT';
+}
+
+/* ==========================================================
+   SUPER DATABASE 150 CÂU HỎI TOÁN TƯ DUY LỚP 5
+   ========================================================== */
+const questionBank = {
+    round1: [
+        { q: "Dãy số: 2, 5, 8, 11, ..., 59 có bao nhiêu số hạng?", options: ["20 số", "19 số", "21 số", "18 số"], answer: "20 số", hint: "Số số hạng = (Số cuối - Số đầu) : Khoảng cách + 1." },
+        { q: "Tổng của dãy số cách đều: 1 + 3 + 5 + 7 + ... + 19 bằng bao nhiêu?", options: ["100", "90", "81", "110"], answer: "100", hint: "Dãy có 10 số hạng. Tổng = (Đầu + Cuối) x Số số hạng : 2." },
+        { q: "Chữ số tận cùng của tích 1 x 3 x 5 x 7 x ... x 2025 là:", options: ["5", "0", "1", "9"], answer: "5", hint: "Số lẻ nhân với 5 luôn có chữ số tận cùng là 5." },
+        { q: "Một hàng cây dài 40m, hai đầu đường đều trồng cây, khoảng cách giữa 2 cây là 5m. Hỏi có mấy cây?", options: ["9 cây", "8 cây", "10 cây", "7 cây"], answer: "9 cây", hint: "Số cây = Số khoảng cách + 1." },
+        { q: "Trong một hàng dọc, Nam đứng thứ 6 từ trên xuống và thứ 8 từ dưới lên. Hỏi hàng đó có bao nhiêu người?", options: ["13 người", "14 người", "12 người", "15 người"], answer: "13 người", hint: "Tổng số người = 6 + 8 - 1 = 13." },
+        { q: "Một hình vuông có chu vi 36cm. Diện tích hình vuông đó là:", options: ["81 cm²", "36 cm²", "64 cm²", "72 cm²"], answer: "81 cm²", hint: "Cạnh = 36 : 4 = 9cm. Diện tích = 9 x 9 = 81." },
+        { q: "Nếu ngày 1 tháng này là Thứ Bảy, thì ngày 22 tháng này là Thứ mấy?", options: ["Thứ Bảy", "Chủ Nhật", "Thứ sáu", "Thứ Hai"], answer: "Thứ Bảy", hint: "Khoảng cách là 21 ngày (21 chia hết cho 7)." },
+        { q: "Số tự nhiên nhỏ nhất có 3 chữ số khác nhau chia hết cho 5 là:", options: ["105", "100", "120", "102"], answer: "105", hint: "Hàng trăm nhỏ nhất là 1, chục là 0, đơn vị chọn 5." },
+        { q: "Hình vuông lưới 2x2 có tổng cộng bao nhiêu hình vuông?", options: ["5 hình", "4 hình", "6 hình", "8 hình"], answer: "5 hình", hint: "Gồm 4 hình đơn 1x1 và 1 hình lớn 2x2." },
+        { q: "Cho A = 2 x 12 x 22 x 32. Chữ số tận cùng của A là:", options: ["6", "2", "4", "8"], answer: "6", hint: "2 x 2 x 2 x 2 = 16 -> Tận cùng là 6." },
+        { q: "Một số cộng thêm 15 rồi nhân 3 thì được 60. Số đó là:", options: ["5", "10", "15", "20"], answer: "5", hint: "Tính ngược từ dưới lên: 60 : 3 - 15 = 5." },
+        { q: "Trong hộp có 5 bi đỏ, 4 bi xanh. Lấy ít nhất mấy viên để chắc chắn có 1 bi đỏ?", options: ["5 viên", "4 viên", "6 viên", "9 viên"], answer: "5 viên", hint: "Xui nhất lấy hết 4 bi xanh, lấy thêm 1 viên nữa!" },
+        { q: "Có bao nhiêu số có 2 chữ số chia hết cho 3?", options: ["30 số", "31 số", "29 số", "33 số"], answer: "30 số", hint: "Số nhỏ nhất là 12, lớn nhất là 99. Số số hạng = (99 - 12):3 + 1 = 30." },
+        { q: "Lập được bao nhiêu số có 2 chữ số khác nhau từ {1, 2, 3}?", options: ["6 số", "9 số", "5 số", "8 số"], answer: "6 số", hint: "Hàng chục có 3 cách, hàng đơn vị có 2 cách." },
+        { q: "Hình chữ nhật có chiều dài 12m, chiều rộng 8m. Chu vi hình chữ nhật là:", options: ["40m", "96m", "20m", "48m"], answer: "40m", hint: "(12 + 8) x 2 = 40m." },
+        { q: "An nói: 'Tớ luôn nói dối'. Phát biểu nào sau đây đúng?", options: ["An mâu thuẫn (Logic)", "An nói thật", "An nói dối", "Không xác định"], answer: "An mâu thuẫn (Logic)", hint: "Đây là bài toán Nghịch lý người nói dối nổi tiếng!" },
+        { q: "Một khúc gỗ dài 12m, mỗi lần cưa mất 5 phút ra đoạn 2m. Hỏi cưa xong mất bao lâu?", options: ["25 phút", "30 phút", "20 phút", "35 phút"], answer: "25 phút", hint: "Cưa 6 đoạn chỉ cần 5 lần cưa: 5 x 5 = 25 phút." },
+        { q: "Tính tổng: 2 + 4 + 6 + 8 + ... + 20 = ?", options: ["110", "100", "120", "90"], answer: "110", hint: "Có 10 số hạng. Tổng = (2 + 20) x 10 : 2 = 110." },
+        { q: "Tìm số thứ 10 trong dãy số: 3, 6, 9, 12, ...", options: ["30", "27", "33", "36"], answer: "30", hint: "Số thứ n = n x 3." },
+        { q: "Trong tủ có 4 đôi tất màu đen khác nhau. Lấy ít nhất mấy chiếc để có 1 đôi đúng?", options: ["5 chiếc", "4 chiếc", "2 chiếc", "3 chiếc"], answer: "5 chiếc", hint: "Trường hợp xui nhất lấy 4 chiếc toàn vế trái!" },
+        { q: "Tìm x biết: (x - 5) x 4 = 20. x là:", options: ["10", "5", "8", "15"], answer: "10", hint: "x - 5 = 5 -> x = 10." },
+        { q: "Chu vi hình vuông là 20cm, diện tích là:", options: ["25 cm²", "20 cm²", "16 cm²", "30 cm²"], answer: "25 cm²", hint: "Cạnh = 5cm. Diện tích = 5 x 5 = 25." },
+        { q: "Một con ốc sên leo cột 10m. Ban ngày leo 3m, đêm tụt 2m. Mấy ngày leo tới đỉnh?", options: ["8 ngày", "10 ngày", "7 ngày", "9 ngày"], answer: "8 ngày", hint: "Ngày thứ 7 leo được 7m. Ngày 8 leo 3m nữa chạm đỉnh!" },
+        { q: "Tổng của số chẵn lớn nhất có 2 chữ số và số lẻ nhỏ nhất có 2 chữ số là:", options: ["109", "108", "110", "99"], answer: "109", hint: "98 + 11 = 109." },
+        { q: "Có bao nhiêu hình vuông trong hình lưới 3x3?", options: ["14 hình", "9 hình", "10 hình", "13 hình"], answer: "14 hình", hint: "1² + 2² + 3² = 1 + 4 + 9 = 14." },
+        { q: "Nếu bớt 5 ở số bị trừ thì hiệu sẽ:", options: ["Giảm 5", "Tăng 5", "Không đổi", "Tăng 10"], answer: "Giảm 5", hint: "Số bị trừ giảm bao nhiêu thì Hiệu giảm bấy nhiêu." },
+        { q: "Chữ số tận cùng của 5 x 5 x 5 x ... x 5 là:", options: ["5", "0", "25", "1"], answer: "5", hint: "5 nhân với chính nó luôn có tận cùng là 5." },
+        { q: "Có 6 đội bóng thi đấu vòng tròn 1 lượt. Có tất cả bao nhiêu trận đấu?", options: ["15 trận", "30 trận", "12 trận", "18 trận"], answer: "15 trận", hint: "Số trận = 6 x 5 : 2 = 15 trận." },
+        { q: "Tìm dư của phép chia 12345 : 9", options: ["6", "5", "3", "0"], answer: "6", hint: "Tổng các chữ số = 15. 15 chia 9 dư 6." },
+        { q: "Số bé nhất có 3 chữ số chia hết cho cả 2, 3 và 5 là:", options: ["120", "100", "150", "105"], answer: "120", hint: "Số đó phải có tận cùng là 0 và tổng chữ số chia hết cho 3." }
+    ],
+    round2: [
+        { q: "Chữ số tận cùng của tích: 3 x 13 x 23 x 33 x 43 là:", options: ["3", "9", "7", "1"], answer: "3", hint: "3 x 3 x 3 x 3 x 3 = 243 -> Tận cùng là 3." },
+        { q: "Một phép chia cho 8 có thương là 12, số dư lớn nhất có thể. Số bị chia là:", options: ["103", "104", "96", "100"], answer: "103", hint: "Số dư lớn nhất là 7. Số bị chia = 12 x 8 + 7 = 103." },
+        { q: "Hộp có 6 bi xanh, 8 bi đỏ, 10 bi vàng. Lấy ít nhất mấy viên để chắc chắn có 1 bi vàng?", options: ["15 viên", "14 viên", "11 viên", "19 viên"], answer: "15 viên", hint: "Xui nhất lấy hết 8 đỏ + 6 xanh = 14 viên. Thêm 1 viên nữa!" },
+        { q: "Tích 1 x 2 x 3 x 4 x ... x 10 có tận cùng bao nhiêu chữ số 0?", options: ["2 chữ số 0", "1 chữ số 0", "3 chữ số 0", "0 chữ số 0"], answer: "2 chữ số 0", hint: "Xuất hiện cặp nhân 2x5 và số 10." },
+        { q: "Viết số lớn nhất có 4 chữ số khác nhau sao cho tổng các chữ số bằng 10:", options: ["7210", "4321", "9100", "8200"], answer: "7210", hint: "Ưu tiên chữ số lớn ở hàng nghìn: 7 + 2 + 1 + 0 = 10." },
+        { q: "Tìm số thứ 20 trong dãy số: 2, 6, 10, 14, ...", options: ["78", "80", "76", "82"], answer: "78", hint: "Số thứ 20 = 2 + (20 - 1) x 4 = 78." },
+        { q: "Thừa 12 quyển kẹo chia cho học sinh. Nếu mỗi bạn 5 quyển thì thừa 2 quyển. Số học sinh là:", options: ["2 bạn", "5 bạn", "3 bạn", "4 bạn"], answer: "2 bạn", hint: "Bài toán Thừa Thiếu cơ bản." },
+        { q: "Tìm đường đi ngắn nhất lưới tọa độ từ (0,0) đến (2,2) chỉ đi lên hoặc sang phải:", options: ["6 đường", "4 đường", "8 đường", "5 đường"], answer: "6 đường", hint: "Chọn 2 bước lên trong tổng 4 bước: 4x3:2 = 6." },
+        { q: "Người thứ nhất nói: B nói dối. B nói: C nói dối. Biết chỉ có 1 người nói thật. AI NÓI THẬT?", options: ["B nói thật", "Người thứ nhất", "C nói thật", "Không ai cả"], answer: "B nói thật", hint: "Giả sử B nói thật -> A sai, C sai -> Đúng điều kiện chỉ 1 người nói thật!" },
+        { q: "Ngày 1 tháng 6 là Thứ Ba. Hỏi ngày 30 tháng 6 cùng năm đó là Thứ mấy?", options: ["Thứ Tư", "Thứ Ba", "Thứ Năm", "Thứ Hai"], answer: "Thứ Tư", hint: "Khoảng cách 29 ngày. 29 : 7 dư 1." },
+        { q: "Hình chữ nhật có diện tích 48 cm², chiều dài 8cm. Chu vi là:", options: ["28 cm", "14 cm", "24 cm", "32 cm"], answer: "28 cm", hint: "Rộng = 6cm. Chu vi = (8 + 6) x 2 = 28cm." },
+        { q: "Một con đường trồng 21 cây hai đầu đường, khoảng cách 4m. Độ dài con đường là:", options: ["80m", "84m", "76m", "100m"], answer: "80m", hint: "Số khoảng cách = 21 - 1 = 20. Độ dài = 20 x 4 = 80m." },
+        { q: "Có bao nhiêu số chẵn có 3 chữ số?", options: ["450 số", "500 số", "400 số", "499 số"], answer: "450 số", hint: "(998 - 100) : 2 + 1 = 450 số." },
+        { q: "Tổng hai số là 100, hiệu hai số là 20. Số lớn là:", options: ["60", "40", "50", "70"], answer: "60", hint: "Số lớn = (Tổng + Hiệu) : 2 = (100 + 20) : 2 = 60." },
+        { q: "Tuổi bố gấp 4 lần tuổi con. Bố hơn con 30 tuổi. Tuổi con là:", options: ["10 tuổi", "8 tuổi", "12 tuổi", "15 tuổi"], answer: "10 tuổi", hint: "Hiệu số phần = 3. Tuổi con = 30 : 3 = 10." },
+        { q: "Tính tổng dãy số: 5 + 10 + 15 + ... + 100 = ?", options: ["1050", "1000", "1100", "950"], answer: "1050", hint: "Có 20 số hạng. Tổng = (5 + 100) x 20 : 2 = 1050." },
+        { q: "Có 5 cái bánh chia đều cho 4 người. Mỗi người nhận được bao nhiêu phần bánh?", options: ["5/4 bánh", "4/5 bánh", "1 bánh", "1/2 bánh"], answer: "5/4 bánh", hint: "Thực hiện phép chia 5 : 4 = 5/4." },
+        { q: "Cho dãy số: 1, 4, 9, 16, 25, ... Số hạng tiếp theo là:", options: ["36", "30", "35", "40"], answer: "36", hint: "Dãy số chính phương: 1², 2², 3², 4², 5², 6²=36." },
+        { q: "Số chẵn nhỏ nhất có 4 chữ số khác nhau chia hết cho 9 là:", options: ["1026", "1035", "1206", "1062"], answer: "1026", hint: "Tổng các chữ số = 9 và hàng đơn vị chẵn." },
+        { q: "Một lớp có 30 học sinh. Số nữ bằng 2/3 số nam. Số học sinh nam là:", options: ["18 nam", "12 nam", "15 nam", "20 nam"], answer: "18 nam", hint: "Tổng số phần = 5. Nam = 30 : 5 x 3 = 18." },
+        { q: "Một hình vuông có cạnh tăng gấp đôi thì diện tích tăng lên mấy lần?", options: ["4 lần", "2 lần", "8 lần", "6 lần"], answer: "4 lần", hint: "S = a x a -> 2a x 2a = 4 x a x a." },
+        { q: "Hòm báu chứa 5 ổ khóa. Cần lấy ít nhất mấy chìa để mở chắc chắn 1 ổ?", options: ["5 chìa", "4 chìa", "1 chìa", "6 chìa"], answer: "5 chìa", hint: "Trường hợp xấu nhất lấy 4 chìa sai." },
+        { q: "Biết 3 người làm xong công việc trong 6 ngày. Hỏi 6 người làm xong trong mấy ngày?", options: ["3 ngày", "12 ngày", "2 ngày", "4 ngày"], answer: "3 ngày", hint: "Tỉ lệ nghịch: Số người tăng 2 lần thì ngày giảm 2 lần." },
+        { q: "Trung bình cộng của 5 số lẻ liên tiếp là 25. Số lớn nhất là:", options: ["29", "27", "25", "31"], answer: "29", hint: "Số ở giữa là 25 -> Dãy là 21, 23, 25, 27, 29." },
+        { q: "Số chia hết cho 2 và 3 phải có đặc điểm gì?", options: ["Chữ số tận cùng chẵn và tổng chữ số chia hết cho 3", "Tận cùng là 0", "Tổng chia hết cho 6", "Cả A và C"], answer: "Cả A và C", hint: "Số đó phải chia hết cho 6." },
+        { q: "Giá trị của A = 1/2 + 1/4 + 1/8 + 1/16 + 1/32 là:", options: ["31/32", "1", "30/32", "15/16"], answer: "31/32", hint: "A = 1 - 1/32 = 31/32." },
+        { q: "Có bao nhiêu góc vuông trong hình chữ nhật?", options: ["4 góc", "2 góc", "8 góc", "6 góc"], answer: "4 góc", hint: "4 đỉnh của hình chữ nhật đều là góc vuông." },
+        { q: "Lập được bao nhiêu số chia hết cho 5 từ {0, 1, 5, 8} có 3 chữ số khác nhau?", options: ["10 số", "8 số", "12 số", "6 số"], answer: "10 số", hint: "Xét 2 trường hợp tận cùng bằng 0 và tận cùng bằng 5." },
+        { q: "Hiệu giữa số lớn nhất có 4 chữ số và số nhỏ nhất có 4 chữ số khác nhau là:", options: ["8975", "8999", "8976", "9000"], answer: "8975", hint: "9999 - 1024 = 8975." },
+        { q: "Số dư của 2025 : 4 là bao nhiêu?", options: ["1", "2", "3", "0"], answer: "1", hint: "Lấy 2 chữ số tận cùng 25 : 4 dư 1." }
+    ],
+    round3: [
+        { q: "🌋 NÚI LỬA: Tìm chữ số tận cùng của tích: 7 x 17 x 27 x 37 x ... x 97 (10 số hạng):", options: ["1", "7", "9", "3"], answer: "1", hint: "7 x 7 x 7 x 7 có tận cùng là 1. Tích 10 số có tận cùng là 1 x 1 x 9 = 1." },
+        { q: "🌋 NÚI LỬA: Lấy ít nhất bao nhiêu thẻ từ 1 đến 20 để chắc chắn có 2 thẻ có tổng bằng 21?", options: ["11 thẻ", "10 thẻ", "12 thẻ", "15 thẻ"], answer: "11 thẻ", hint: "Có 10 cặp tổng bằng 21. Lấy 11 thẻ chắc chắn trúng 1 cặp." },
+        { q: "🌋 NÚI LỬA: Cho dãy số: 1, 2, 4, 7, 11, 16, 22, ... Số thứ 9 của dãy là:", options: ["37", "29", "36", "40"], answer: "37", hint: "Quy luật: +1, +2, +3, +4, +5, +6, +7, +8 -> 29 + 8 = 37." },
+        { q: "Số chữ số 0 tận cùng của tích A = 1 x 2 x 3 x ... x 20 là:", options: ["4 chữ số 0", "2 chữ số 0", "3 chữ số 0", "5 chữ số 0"], answer: "4 chữ số 0", hint: "Có 4 thừa số chia hết cho 5: 5, 10, 15, 20." },
+        { q: "Trong một ô vuông 4x4 có tổng cộng bao nhiêu hình vuông?", options: ["30 hình", "16 hình", "25 hình", "20 hình"], answer: "30 hình", hint: "1² + 2² + 3² + 4² = 1 + 4 + 9 + 16 = 30." },
+        { q: "Lớp 5A có 35 học sinh đi câu cá. 20 bạn câu được cá chép, 18 bạn câu được cá trắm. Mấy bạn câu được cả 2 loại?", options: ["3 bạn", "5 bạn", "2 bạn", "8 bạn"], answer: "3 bạn", hint: "(20 + 18) - 35 = 3 bạn." },
+        { q: "Một phép chia cho 11 có số dư lớn nhất có thể. Hỏi số dư đó là bao nhiêu?", options: ["10", "11", "9", "1"], answer: "10", hint: "Số dư lớn nhất luôn nhỏ hơn số chia 1 đơn vị." },
+        { q: "Cho hình vuông có diện tích 64 cm². Chu vi của hình vuông đó là:", options: ["32 cm", "16 cm", "24 cm", "64 cm"], answer: "32 cm", hint: "Cạnh = 8cm. Chu vi = 8 x 4 = 32cm." },
+        { q: "Ngày 8 tháng 3 năm đó là Thứ Tư. Hỏi ngày 26 tháng 3 năm đó là Thứ mấy?", options: ["Chủ Nhật", "Thứ Bảy", "Thứ Hai", "Thứ Sáu"], answer: "Chủ Nhật", hint: "Khoảng cách 18 ngày. 18 : 7 dư 4. Thứ 4 + 4 ngày = Chủ Nhật." },
+        { q: "Tìm x biết: x chia cho 9 dư 5 và x chia cho 5 dư 0 (x < 100 và lớn nhất). x là:", options: ["95", "85", "75", "90"], answer: "95", hint: "95 : 5 = 19 (dư 0), 95 : 9 = 10 (dư 5)." },
+        { q: "Số bé nhất có 5 chữ số chia hết cho 3 là:", options: ["10002", "10000", "10005", "10020"], answer: "10002", hint: "Tổng các chữ số = 1 + 0 + 0 + 0 + 2 = 3." },
+        { q: "Một người xếp 50 hộp mứt vào các thùng, mỗi thùng 6 hộp. Cần ít nhất mấy thùng?", options: ["9 thùng", "8 thùng", "10 thùng", "7 thùng"], answer: "9 thùng", hint: "50 : 6 = 8 dư 2 hộp -> Cần 9 thùng." },
+        { q: "Đường đi ngắn nhất trên lưới từ (0,0) đến (3,1) gồm bao nhiêu bước?", options: ["4 bước", "3 bước", "5 bước", "6 bước"], answer: "4 bước", hint: "3 bước ngang + 1 bước dọc = 4 bước." },
+        { q: "Một quãng đường dài 100m, trồng cây 2 bên đường (2 đầu đều có cây), cách nhau 5m. Tổng số cây là:", options: ["42 cây", "21 cây", "40 cây", "20 cây"], answer: "42 cây", hint: "Mỗi bên có (100:5)+1 = 21 cây. Hai bên có 42 cây." },
+        { q: "Một nhóm 4 người bắt tay nhau đôi một. Có tất cả bao nhiêu cái bắt tay?", options: ["6 cái", "12 cái", "8 cái", "10 cái"], answer: "6 cái", hint: "4 x 3 : 2 = 6 cái." },
+        { q: "Có bao nhiêu số chẵn có 2 chữ số khác nhau?", options: ["41 số", "45 số", "40 số", "50 số"], answer: "41 số", hint: "Tổng số chẵn 2 chữ số là 45, trừ 4 số trùng (22, 44, 66, 88) = 41." },
+        { q: "Giá trị của B = 9 + 99 + 999 + 9999 là:", options: ["11106", "11110", "11100", "10996"], answer: "11106", hint: "(10-1)+(100-1)+(1000-1)+(10000-1) = 11110 - 4 = 11106." },
+        { q: "Tổng hai số là 84, tỉ số là 1/3. Số bé là:", options: ["21", "63", "28", "18"], answer: "21", hint: "84 : 4 x 1 = 21." },
+        { q: "Biết a x b = 24. Nếu gấp a lên 2 lần và b lên 3 lần thì tích mới là:", options: ["144", "72", "48", "120"], answer: "144", hint: "24 x 2 x 3 = 144." },
+        { q: "Số chữ số để đánh số trang một cuốn sách dày 100 trang là:", options: ["192 chữ số", "100 chữ số", "200 chữ số", "180 chữ số"], answer: "192 chữ số", hint: "Từ 1-9 có 9 chữ số. Từ 10-99 có 180 chữ số. Trang 100 có 3 chữ số." },
+        { q: "Chữ số tận cùng của 9 x 9 x 9 x ... x 9 (2024 thừa số 9) là:", options: ["1", "9", "3", "7"], answer: "1", hint: "9 mũ chẵn luôn tận cùng bằng 1." },
+        { q: "Hình chữ nhật có chu vi 30cm, chiều dài hơn chiều rộng 3cm. Diện tích là:", options: ["54 cm²", "50 cm²", "48 cm²", "60 cm²"], answer: "54 cm²", hint: "Nửa chu vi = 15. Dài = 9, Rộng = 6. S = 9 x 6 = 54." },
+        { q: "Trong một tháng có 3 ngày Chủ Nhật là ngày chẵn. Ngày Chủ Nhật đầu tiên là ngày mấy?", options: ["Ngày 2", "Ngày 1", "Ngày 4", "Ngày 6"], answer: "Ngày 2", hint: "Các ngày Chủ Nhật là 2, 9, 16, 23, 30." },
+        { q: "Có 3 bạn A, B, C. A bảo 'B nói dối', B bảo 'C nói dối', C bảo 'A và B đều nói dối'. Ai nói thật?", options: ["B nói thật", "A nói thật", "C nói thật", "Không ai cả"], answer: "B nói thật", hint: "Xét trường hợp B nói thật thì mâu thuẫn được giải quyết!" },
+        { q: "Một sợi dây dài 20m được cắt thành các đoạn 2m. Cần cắt mấy lần?", options: ["9 lần", "10 lần", "8 lần", "11 lần"], answer: "9 lần", hint: "Số lần cắt = Số đoạn - 1 = 10 - 1 = 9 lần." },
+        { q: "Tìm số chia nhỏ nhất trong phép chia có số dư là 15:", options: ["16", "15", "14", "17"], answer: "16", hint: "Số chia luôn lớn hơn số dư ít nhất 1 đơn vị." },
+        { q: "Thực hiện phép tính: 100 - 99 + 98 - 97 + ... + 2 - 1 = ?", options: ["50", "100", "49", "1"], answer: "50", hint: "Có 50 cặp, mỗi cặp có giá trị bằng 1." },
+        { q: "Một căn phòng hình vuông ghép bởi 100 viên gạch vuông cạnh 4dm. Diện tích phòng là:", options: ["16 m²", "160 m²", "40 m²", "400 m²"], answer: "16 m²", hint: "S 1 viên = 16 dm² = 0.16 m². 100 viên = 16 m²." },
+        { q: "Tuổi Mẹ hiện nay gấp 3 lần tuổi Con. 4 năm trước tổng tuổi 2 mẹ con là 40. Tuổi con hiện nay là:", options: ["12 tuổi", "10 tuổi", "14 tuổi", "8 tuổi"], answer: "12 tuổi", hint: "Tổng tuổi hiện nay = 48. Tuổi con = 48 : 4 = 12." },
+        { q: "Số tự nhiên nhỏ nhất chia cho 3 dư 2, chia cho 4 dư 3, chia cho 5 dư 4 là:", options: ["59", "29", "119", "89"], answer: "59", hint: "Số đó cộng thêm 1 chia hết cho cả 3, 4, 5. BSCNN(3,4,5) - 1 = 60 - 1 = 59." }
+    ],
+    round4: [
+        { q: "🌪️ BÃO TỐ (TỐC ĐỘ): Tính nhanh: 125 x 8 x 7 = ?", options: ["7000", "5600", "1000", "700"], answer: "7000", hint: "125 x 8 = 1000, 1000 x 7 = 7000." },
+        { q: "🌪️ BÃO TỐ (TỐC ĐỘ): Tính nhanh: 36 x 45 + 36 x 55 = ?", options: ["3600", "360", "4500", "1800"], answer: "3600", hint: "36 x (45 + 55) = 36 x 100." },
+        { q: "🌪️ BÃO TỐ (TỐC ĐỘ): Tích (100 - 1) x (100 - 2) x ... x (100 - 100) bằng:", options: ["0", "1000", "100", "1"], answer: "0", hint: "Thừa số (100 - 100) = 0." },
+        { q: "Tính nhanh: 1 + 2 + 3 + ... + 99 + 100 = ?", options: ["5050", "5000", "5100", "4950"], answer: "5050", hint: "(1 + 100) x 100 : 2 = 5050." },
+        { q: "Một cửa hàng có 50kg gạo, đã bán 2/5 số gạo. Còn lại bao nhiêu kg?", options: ["30 kg", "20 kg", "25 kg", "35 kg"], answer: "30 kg", hint: "Còn lại 3/5 x 50 = 30kg." },
+        { q: "Tìm chữ số tận cùng của tích: 2 x 12 x 22 x ... x 92 (10 thừa số):", options: ["4", "6", "2", "8"], answer: "4", hint: "Mỗi nhóm 4 số 2 tận cùng là 6. 10 số = 2 nhóm (tận cùng 6) x 2 x 2 = tận cùng 4." },
+        { q: "Hình chữ nhật có chu vi 40cm, chiều dài gấp 3 lần chiều rộng. Diện tích là:", options: ["75 cm²", "100 cm²", "60 cm²", "80 cm²"], answer: "75 cm²", hint: "Nửa chu vi = 20. Rộng = 5, Dài = 15. S = 75." },
+        { q: "Có bao nhiêu số chia hết cho 5 có 3 chữ số?", options: ["180 số", "100 số", "200 số", "150 số"], answer: "180 số", hint: "(995 - 100) : 5 + 1 = 180." },
+        { q: "Hộp có 8 bi xanh, 7 bi đỏ, 5 bi vàng. Lấy ít nhất mấy bi để chắc chắn có 1 bi xanh?", options: ["13 viên", "12 viên", "8 viên", "15 viên"], answer: "13 viên", hint: "7 đỏ + 5 vàng = 12 viên. Thêm 1 viên nữa!" },
+        { q: "Tìm số tự nhiên x biết x : 7 = 15 (dư 6). x là:", options: ["111", "105", "112", "110"], answer: "111", hint: "15 x 7 + 6 = 111." },
+        { q: "Trong một chuỗi hạt: 2 đỏ, 3 xanh, 2 đỏ, 3 xanh... Hạt thứ 25 màu gì?", options: ["Màu xanh", "Màu đỏ", "Màu vàng", "Màu trắng"], answer: "Màu xanh", hint: "Chu kỳ 5 hạt. 25 chia hết cho 5 -> Hạt cuối chu kỳ màu xanh." },
+        { q: "Tích của 5 số tự nhiên liên tiếp luôn chia hết cho số nào?", options: ["120", "100", "60", "24"], answer: "120", hint: "1 x 2 x 3 x 4 x 5 = 120." },
+        { q: "Chu vi tam giác đều có cạnh 8cm là:", options: ["24 cm", "16 cm", "32 cm", "20 cm"], answer: "24 cm", hint: "8 x 3 = 24 cm." },
+        { q: "Số dư nhỏ nhất có thể trong phép chia có dư là:", options: ["1", "0", "2", "3"], answer: "1", hint: "Phép chia có dư có số dư nhỏ nhất là 1." },
+        { q: "Tính nhanh: 88 x 99 + 88 = ?", options: ["8800", "8888", "9900", "8000"], answer: "8800", hint: "88 x (99 + 1) = 8800." },
+        { q: "Cho dãy số: 5, 11, 17, 23, ... Số thứ 15 của dãy là:", options: ["89", "83", "95", "91"], answer: "89", hint: "5 + 14 x 6 = 89." },
+        { q: "Một gia đình có 5 người con gái, mỗi người con gái có 1 người anh trai. Hỏi gia đình có mấy người con?", options: ["6 người con", "10 người con", "5 người con", "11 người con"], answer: "6 người con", hint: "5 cô con gái dùng chung 1 người anh trai!" },
+        { q: "Giá trị của A = 2024 x 2025 - 1 / 2023 + 2024 x 2024 là:", options: ["1", "2024", "2025", "0"], answer: "1", hint: "Biến đổi tử số bằng mẫu số -> A = 1." },
+        { q: "Một ô tô đi từ A đến B hết 2 giờ với vận tốc 50km/h. Quãng đường AB dài:", options: ["100 km", "120 km", "80 km", "150 km"], answer: "100 km", hint: "Quãng đường = Vận tốc x Thời gian = 50 x 2 = 100km." },
+        { q: "Có bao nhiêu chữ số 5 trong các số từ 1 đến 100?", options: ["20 chữ số", "10 chữ số", "19 chữ số", "11 chữ số"], answer: "20 chữ số", hint: "Hàng đơn vị có 10, hàng chục có 10 chữ số 5." },
+        { q: "Tổng của 3 số liên tiếp là 60. Số lớn nhất là:", options: ["21", "20", "19", "22"], answer: "21", hint: "Số ở giữa = 20. Ba số là 19, 20, 21." },
+        { q: "Một hình lập phương có cạnh 3cm. Thể tích hình lập phương là:", options: ["27 cm³", "9 cm³", "18 cm³", "36 cm³"], answer: "27 cm³", hint: "V = 3 x 3 x 3 = 27 cm³." },
+        { q: "Một công việc 4 người làm hết 8 giờ. Muốn làm xong trong 4 giờ cần mấy người?", options: ["8 người", "6 người", "10 người", "12 người"], answer: "8 người", hint: "Thời gian giảm nửa thì số người tăng gấp đôi." },
+        { q: "Tìm x: x x 0.1 = 5. x là:", options: ["50", "5", "0.5", "500"], answer: "50", hint: "x = 5 : 0.1 = 50." },
+        { q: "Tích các số từ 1 đến 50 có tận cùng bao nhiêu chữ số 0?", options: ["12 chữ số 0", "10 chữ số 0", "8 chữ số 0", "15 chữ số 0"], answer: "12 chữ số 0", hint: "Đếm số thừa số 5 trong dãy: 10 + 2 (từ 25, 50) = 12." },
+        { q: "Mẹ sinh con năm mẹ 26 tuổi. Hỏi khi con 10 tuổi thì mẹ bao nhiêu tuổi?", options: ["36 tuổi", "30 tuổi", "40 tuổi", "32 tuổi"], answer: "36 tuổi", hint: "Hiệu số tuổi không đổi theo thời gian: 26 + 10 = 36." },
+        { q: "Viết số bé nhất có 3 chữ số khác nhau chia hết cho 3:", options: ["102", "120", "105", "123"], answer: "102", hint: "1 + 0 + 2 = 3 chia hết cho 3." },
+        { q: "Cho dãy: 2, 4, 8, 16, 32, ... Số tiếp theo là:", options: ["64", "48", "50", "128"], answer: "64", hint: "Mỗi số nhân đôi số trước." },
+        { q: "Phép chia có dư 25 : 7. Thương và số dư lần lượt là:", options: ["3 và dư 4", "3 và dư 2", "4 và dư 1", "3 và dư 5"], answer: "3 và dư 4", hint: "25 = 7 x 3 + 4." },
+        { q: "Số thích hợp điền vào dấu ? trong dãy: 1, 1, 2, 3, 5, 8, ? là:", options: ["13", "11", "12", "15"], answer: "13", hint: "Dãy Fibonacci: Số sau bằng tổng 2 số liền trước." }
+    ],
+    round5: [
+        { q: "👑 ĐẢO KHO BÁU (SINH TỒN): Tìm chữ số tận cùng của B = 3^2024 (3 x 3 x ... 2024 lần):", options: ["1", "3", "9", "7"], answer: "1", hint: "Chu kỳ chữ số tận cùng của 3 là 3, 9, 7, 1 (chu kỳ 4). 2024 chia hết cho 4." },
+        { q: "👑 ĐẢO KHO BÁU (SINH TỒN): Hộp có 15 bi đỏ, 12 bi xanh, 10 bi vàng. Lấy ít nhất mấy bi để chắc chắn có 2 bi khác màu?", options: ["16 viên", "15 viên", "26 viên", "13 viên"], answer: "16 viên", hint: "Xui nhất lấy hết 15 bi đỏ cùng màu, thêm 1 viên nữa!" },
+        { q: "👑 ĐẢO KHO BÁU (SINH TỒN): Có 10 người trong phòng. Cần chọn 2 người làm nhóm trưởng và nhóm phó. Có bao nhiêu cách chọn?", options: ["90 cách", "45 cách", "100 cách", "80 cách"], answer: "90 cách", hint: "Chọn nhóm trưởng có 10 cách, nhóm phó có 9 cách: 10 x 9 = 90." },
+        { q: "Một tờ giấy hình vuông cạnh 10cm. Cắt đi 4 góc 4 hình vuông cạnh 2cm. Diện tích còn lại là:", options: ["84 cm²", "100 cm²", "64 cm²", "96 cm²"], answer: "84 cm²", hint: "S ban đầu = 100. Cắt 4 x (2x2) = 16. S còn lại = 100 - 16 = 84." },
+        { q: "Số tự nhiên nhỏ nhất chia cho 5 dư 4, chia cho 4 dư 3, chia cho 3 dư 2, chia cho 2 dư 1 là:", options: ["59", "119", "29", "89"], answer: "59", hint: "Số đó cộng 1 chia hết cho 5, 4, 3, 2. BCNN(2,3,4,5) - 1 = 60 - 1 = 59." },
+        { q: "Cho dãy số: 3, 8, 15, 24, 35, ... Số thứ 10 của dãy là:", options: ["120", "100", "99", "143"], answer: "120", hint: "Quy luật: 1x3, 2x4, 3x5, 4x6, 5x7 -> Số thứ 10 = 10 x 12 = 120." },
+        { q: "Một lớp có 40 học sinh. 25 bạn thích Toán, 20 bạn thích Văn, 5 bạn không thích cả 2. Mấy bạn thích CẢ HAI MÔN?", options: ["10 bạn", "5 bạn", "15 bạn", "8 bạn"], answer: "10 bạn", hint: "Số bạn thích ít nhất 1 môn = 35. Thích cả 2 môn = (25 + 20) - 35 = 10." },
+        { q: "Một thuyền chèo xuôi dòng với vận tốc 12km/h, ngược dòng 8km/h. Vận tốc dòng nước là:", options: ["2 km/h", "4 km/h", "10 km/h", "1 km/h"], answer: "2 km/h", hint: "V dòng nước = (V xuôi - V ngược) : 2 = (12 - 8) : 2 = 2km/h." },
+        { q: "Cho tích 1 x 2 x 3 x ... x 100. Tích này có tất cả bao nhiêu chữ số 0 ở tận cùng?", options: ["24 chữ số 0", "20 chữ số 0", "25 chữ số 0", "22 chữ số 0"], answer: "24 chữ số 0", hint: "100:5 + 100:25 = 20 + 4 = 24 chữ số 0." },
+        { q: "Hình chữ nhật có chiều dài tăng 20%, chiều rộng giảm 20% thì diện tích thay đổi thế nào?", options: ["Giảm 4%", "Tăng 4%", "Không đổi", "Giảm 2%"], answer: "Giảm 4%", hint: "1.2 x 0.8 = 0.96 = 96% -> Giảm 4%." },
+        { q: "Có 5 chiếc hộp chứa kẹo. Lấy ngẫu nhiên kẹo ra. Lấy ít nhất mấy viên kẹo để chắc chắn có 2 viên từ cùng 1 hộp?", options: ["6 viên", "5 viên", "10 viên", "7 viên"], answer: "6 viên", hint: "Theo nguyên lý Dirichlet: N+1 = 5 + 1 = 6 viên." },
+        { q: "Tìm số dư của 2^100 khi chia cho 3:", options: ["1", "2", "0", "Không xác định"], answer: "1", hint: "2 ≡ -1 (mod 3) -> (-1)^100 ≡ 1 (mod 3)." },
+        { q: "Đồng hồ điểm 3 tiếng chuông mất 6 giây. Hỏi điểm 6 tiếng chuông mất bao nhiêu giây?", options: ["15 giây", "12 giây", "18 giây", "10 giây"], answer: "15 giây", hint: "3 tiếng chuông có 2 khoảng nghỉ = 6s -> 1 khoảng = 3s. 6 tiếng có 5 khoảng = 15s." },
+        { q: "Tìm chữ số tận cùng của A = 1^2025 + 2^2025 + 3^2025 + 4^2025 (mô phỏng nâng cao):", options: ["0", "5", "4", "2"], answer: "0", hint: "1 + 2 + 3 + 4 = 10 -> Tận cùng là 0." },
+        { q: "Cần dùng bao nhiêu chữ số để đánh số trang cuốn sách dày 250 trang?", options: ["642 chữ số", "750 chữ số", "500 chữ số", "600 chữ số"], answer: "642 chữ số", hint: "9x1 + 90x2 + 151x3 = 9 + 180 + 453 = 642." },
+        { q: "Một bể nước chảy vào mất 4 giờ đầy, lỗ rò thoát nước mất 6 giờ bể rỗng. Mở cả hai thì mấy giờ đầy?", options: ["12 giờ", "10 giờ", "8 giờ", "14 giờ"], answer: "12 giờ", hint: "1 giờ được 1/4 - 1/6 = 1/12 bể -> Hết 12 giờ." },
+        { q: "Người A bảo: 'B nói thật'. B bảo: 'C nói dối'. C bảo: 'A nói dối'. Biết có 2 người nói thật, 1 người nói dối. Ai nói dối?", options: ["C nói dối", "A nói dối", "B nói dối", "Không xác định"], answer: "C nói dối", hint: "Nếu A & B nói thật thì C nói dối là hoàn toàn nhất quán!" },
+        { q: "Viết số lớn nhất có 5 chữ số khác nhau sao cho tổng các chữ số bằng 15:", options: ["93210", "54321", "95100", "84210"], answer: "93210", hint: "9 + 3 + 2 + 1 + 0 = 15." },
+        { q: "Hình vuông A có cạnh gấp 3 lần cạnh hình vuông B. Diện tích A gấp mấy lần diện tích B?", options: ["9 lần", "3 lần", "6 lần", "27 lần"], answer: "9 lần", hint: "S = a² -> (3a)² = 9a²." },
+        { q: "Một ô tô đi nửa quãng đường đầu với 40km/h, nửa sau 60km/h. Vận tốc trung bình cả quãng đường là:", options: ["48 km/h", "50 km/h", "45 km/h", "52 km/h"], answer: "48 km/h", hint: "Vtb = 2 x v1 x v2 / (v1 + v2) = 2 x 40 x 60 / 100 = 48km/h." },
+        { q: "Tìm số thứ 100 trong dãy số cách đều: 5, 8, 11, 14, ...", options: ["302", "300", "305", "299"], answer: "302", hint: "Số thứ 100 = 5 + (100 - 1) x 3 = 302." },
+        { q: "Một số bớt đi 20% thì giảm đi bao nhiêu phần trăm so với ban đầu?", options: ["20%", "25%", "80%", "15%"], answer: "20%", hint: "Bớt đi 20% thì chính là giảm đi 20%." },
+        { q: "Năm 2024 là năm nhuận có 366 ngày. Hỏi năm 2024 có bao nhiêu tuần và dư mấy ngày?", options: ["52 tuần dư 2 ngày", "52 tuần dư 1 ngày", "50 tuần dư 2 ngày", "51 tuần dư 3 ngày"], answer: "52 tuần dư 2 ngày", hint: "366 : 7 = 52 dư 2." },
+        { q: "Tổng của 10 số tự nhiên liên tiếp bắt đầu từ 1 là:", options: ["55", "50", "60", "45"], answer: "55", hint: "(1 + 10) x 10 : 2 = 55." },
+        { q: "Hình tròn có bán kính tăng gấp đôi thì diện tích tăng lên mấy lần?", options: ["4 lần", "2 lần", "3.14 lần", "8 lần"], answer: "4 lần", hint: "S = r x r x 3.14 -> 2r x 2r x 3.14 = 4S." },
+        { q: "Có bao nhiêu số có 3 chữ số mà cả 3 chữ số đều là số lẻ?", options: ["125 số", "100 số", "150 số", "200 số"], answer: "125 số", hint: "Hàng trăm có 5 cách, chục 5 cách, đơn vị 5 cách: 5 x 5 x 5 = 125." },
+        { q: "Trong hộp có 10 quả cầu dán số từ 1 đến 10. Lấy ít nhất mấy quả để chắc chắn có 2 quả tổng bằng 11?", options: ["6 quả", "5 quả", "7 quả", "8 quả"], answer: "6 quả", hint: "Có 5 cặp tổng bằng 11. Lấy 6 quả chắc chắn trúng 1 cặp." },
+        { q: "Cho A = 1/1x2 + 1/2x3 + 1/3x4 + ... + 1/99x100. Giá trị của A là:", options: ["99/100", "1", "100/99", "1/100"], answer: "99/100", hint: "A = 1 - 1/100 = 99/100." },
+        { q: "Xếp 8 khối lập phương nhỏ cạnh 1cm thành 1 khối lập phương lớn. Diện tích toàn phần khối lớn là:", options: ["24 cm²", "16 cm²", "32 cm²", "8 cm²"], answer: "24 cm²", hint: "Khối lớn có cạnh 2cm. S toàn phần = 2 x 2 x 6 = 24 cm²." },
+        { q: "🎉 CÂU HỎI THẦY SƠN TÙNG: Lập số lớn nhất có các chữ số khác nhau sao cho tích các chữ số bằng 36:", options: ["941", "661", "4331", "9221"], answer: "941", hint: "Tích 9 x 4 x 1 = 36 -> Số lớn nhất ghép lại là 941." }
+    ]
+};
+
+/* ==========================================================
+   GAME ENGINE & STATE
+   ========================================================== */
+let currentRound = 1; let totalSeconds = 600; let questionTimerSeconds = 30;
+let gold = 0; let streak = 0; let isFrozen = false;
+let totalTimerInterval = null; let questionTimerInterval = null;
+let currentQuestionList = []; let currentQuestionIndex = 0;
+let usedLifelines = { fFifty: false, fFreeze: false, fHint: false };
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+    return arr;
+}
+
+function startGame() {
+    gold = 0; streak = 0; currentRound = 1; totalSeconds = 600;
+    usedLifelines = { fFifty: false, fFreeze: false, fHint: false };
+    document.querySelectorAll('.btn-lifeline').forEach(b => b.classList.remove('used'));
+    
+    document.getElementById('goldDisplay').innerText = gold;
+    document.getElementById('streakDisplay').innerText = streak;
+    stopConfetti();
+    
+    document.getElementById('startScreen').classList.remove('active');
+    document.getElementById('gameScreen').classList.add('active');
+
+    sounds.startBGM(); sounds.setBGMTempo(110);
+    clearInterval(totalTimerInterval); totalTimerInterval = setInterval(updateTotalTimer, 1000);
+
+    loadRound(1);
+}
+
+function updateTotalTimer() {
+    totalSeconds--;
+    const mins = Math.floor(totalSeconds / 60); const secs = totalSeconds % 60;
+    document.getElementById('totalTimer').innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+    if (totalSeconds === 480 && currentRound === 1) loadRound(2);
+    else if (totalSeconds === 360 && currentRound === 2) loadRound(3);
+    else if (totalSeconds === 240 && currentRound === 3) loadRound(4);
+    else if (totalSeconds === 120 && currentRound === 4) loadRound(5);
+
+    if (totalSeconds <= 0) endGame();
+}
+
+function updateMapUI(roundNum) {
+    for(let i=1; i<=5; i++) {
+        const node = document.getElementById(`node${i}`);
+        node.classList.remove('active', 'completed');
+        if (i < roundNum) node.classList.add('completed');
+        else if (i === roundNum) node.classList.add('active');
+    }
+}
+
+function loadRound(roundNum) {
+    currentRound = roundNum;
+    updateMapUI(roundNum);
+
+    const container = document.getElementById('gameContainer');
+    container.classList.remove('survival-mode');
+    clearInterval(questionTimerInterval);
+
+    let rawQuestions = [];
+    if (roundNum === 1) { rawQuestions = questionBank.round1; sounds.setBGMTempo(110); }
+    else if (roundNum === 2) { rawQuestions = questionBank.round2; sounds.setBGMTempo(125); }
+    else if (roundNum === 3) { rawQuestions = questionBank.round3; sounds.setBGMTempo(140); }
+    else if (roundNum === 4) { rawQuestions = questionBank.round4; sounds.setBGMTempo(155); }
+    else if (roundNum === 5) {
+        rawQuestions = questionBank.round5;
+        container.classList.add('survival-mode');
+        sounds.setBGMTempo(180);
+    }
+
+    currentQuestionList = shuffleArray(rawQuestions); currentQuestionIndex = 0;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    if (currentQuestionIndex >= currentQuestionList.length) {
+        currentQuestionList = shuffleArray(currentQuestionList); currentQuestionIndex = 0;
+    }
+
+    const q = currentQuestionList[currentQuestionIndex];
+    document.getElementById('questionText').innerText = q.q;
+
+    const shuffledOptions = shuffleArray(q.options);
+    const optionsGrid = document.getElementById('optionsGrid');
+    optionsGrid.innerHTML = '';
+
+    const prefixes = ['A', 'B', 'C', 'D'];
+    shuffledOptions.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-prefix">${prefixes[index]}</span> ${optText}`;
+        btn.onclick = () => checkAnswer(optText, q.answer);
+        optionsGrid.appendChild(btn);
+    });
+
+    if (currentRound === 5) startQuestionTimer();
+}
+
+function startQuestionTimer() {
+    clearInterval(questionTimerInterval);
+    questionTimerSeconds = 30;
+
+    questionTimerInterval = setInterval(() => {
+        if (!isFrozen) {
+            questionTimerSeconds--;
+            if (questionTimerSeconds <= 5) sounds.playTick();
+
+            if (questionTimerSeconds <= 0) {
+                clearInterval(questionTimerInterval);
+                sounds.playWrong();
+                handleWrongAnswer();
+            }
+        }
+    }, 1000);
+}
+
+function checkAnswer(selectedOpt, correctOpt) {
+    clearInterval(questionTimerInterval);
+
+    if (selectedOpt === correctOpt) {
+        sounds.playCorrect();
+        streak++;
+        document.getElementById('streakDisplay').innerText = streak;
+
+        const board = document.getElementById('chalkboardBox');
+        if (streak >= 3) board.classList.add('fire-combo');
+
+        let basePoints = currentRound === 1 ? 10 : currentRound === 2 ? 20 : currentRound === 3 ? 30 : currentRound === 4 ? 40 : 50;
+        gold += basePoints;
+
+        showMascot("Mở được Hòm Vàng rồi! Tuyệt vời thuyền trưởng! 🪙");
+
+        if (streak === 3) setTimeout(openWheel, 500);
+        else nextQuestion();
+    } else {
+        sounds.playWrong();
+        handleWrongAnswer();
+    }
+
+    document.getElementById('goldDisplay').innerText = gold;
+}
+
+function handleWrongAnswer() {
+    streak = 0;
+    document.getElementById('streakDisplay').innerText = streak;
+    document.getElementById('chalkboardBox').classList.remove('fire-combo');
+
+    if (currentRound === 3) gold = Math.max(0, gold - 5);
+    else if (currentRound === 4) gold = Math.max(0, gold - 10);
+    else if (currentRound === 5) gold = Math.max(0, gold - 20);
+
+    showMascot("Chưa chính xác rồi! Cố gắng ở câu tiếp theo nhé! ⚓");
+    setTimeout(nextQuestion, 1000);
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    renderQuestion();
+}
+
+function showMascot(text) {
+    const speech = document.getElementById('mascotSpeech');
+    speech.innerText = text; speech.style.display = 'block';
+    setTimeout(() => { speech.style.display = 'none'; }, 3000);
+}
+
+function use5050() {
+    if (usedLifelines.fFifty) return;
+    usedLifelines.fFifty = true;
+    document.getElementById('life5050').classList.add('used');
+
+    const q = currentQuestionList[currentQuestionIndex];
+    const btns = Array.from(document.querySelectorAll('.option-btn'));
+    let removed = 0;
+    btns.forEach(btn => {
+        if (!btn.innerText.includes(q.answer) && removed < 2) {
+            btn.classList.add('disabled');
+            removed++;
+        }
+    });
+    showMascot("Thầy Sơn Tùng đã bắn rơi giúp con 2 đáp án sai!");
+}
+
+function useFreeze() {
+    if (usedLifelines.fFreeze) return;
+    usedLifelines.fFreeze = true;
+    document.getElementById('lifeFreeze').classList.add('used');
+    isFrozen = true;
+    showMascot("Đã thả mỏ neo đóng băng thời gian 15s! ⚓");
+    setTimeout(() => { isFrozen = false; }, 15000);
+}
+
+function useHint() {
+    if (usedLifelines.fHint) return;
+    usedLifelines.fHint = true;
+    document.getElementById('lifeHint').classList.add('used');
+    const q = currentQuestionList[currentQuestionIndex];
+    showMascot(q.hint || "Đọc kỹ gợi ý tư duy của Thầy nhé!");
+}
+
+const wheelCanvas = document.getElementById('wheelCanvas');
+const wCtx = wheelCanvas.getContext('2d');
+const prizes = ["+50 Vàng", "Rương Báu", "+100 Vàng", "Thêm 15s", "+10 Vàng", "May Mắn"];
+const colors = ["#f1c40f", "#e74c3c", "#3b7dda", "#27ae60", "#e67e22", "#9b59b6"];
+
+function drawWheel() {
+    const numPrizes = prizes.length; const arc = (2 * Math.PI) / numPrizes;
+    for (let i = 0; i < numPrizes; i++) {
+        wCtx.beginPath(); wCtx.fillStyle = colors[i];
+        wCtx.moveTo(130, 130); wCtx.arc(130, 130, 130, i * arc, (i + 1) * arc); wCtx.fill();
+        wCtx.save(); wCtx.translate(130, 130); wCtx.rotate(i * arc + arc / 2);
+        wCtx.fillStyle = "white"; wCtx.font = "bold 14px Nunito"; wCtx.fillText(prizes[i], 40, 5);
+        wCtx.restore();
+    }
+}
+drawWheel();
+
+function openWheel() { document.getElementById('wheelModal').classList.add('active'); }
+
+function spinWheel() {
+    const btn = document.getElementById('btnSpin'); btn.disabled = true;
+    const wheelBox = document.getElementById('wheelBox');
+    const randomDeg = Math.floor(1800 + Math.random() * 360);
+    wheelBox.style.transform = `rotate(${randomDeg}deg)`;
+
+    setTimeout(() => {
+        document.getElementById('wheelModal').classList.remove('active');
+        btn.disabled = false; wheelBox.style.transform = 'rotate(0deg)';
+        gold += 50; document.getElementById('goldDisplay').innerText = gold;
+        showMascot("Nhận thêm Vàng từ Báu Vật Biển Cả! 🪙");
+        nextQuestion();
+    }, 3200);
+}
+
+function endGame() {
+    clearInterval(totalTimerInterval); clearInterval(questionTimerInterval); sounds.stopBGM();
+    document.getElementById('gameScreen').classList.remove('active');
+    document.getElementById('endScreen').classList.add('active');
+    document.getElementById('finalScoreDisplay').innerText = `${gold} Vàng`;
+    launchConfetti();
+
+    const rankBadge = document.getElementById('rankBadge');
+    if (gold >= 600) { rankBadge.innerText = "👑 KỲ THỦ TOÁN TƯ DUY LỚP 5 VĨ ĐẠI"; rankBadge.style.color = "#27ae60"; }
+    else if (gold >= 400) { rankBadge.innerText = "🌟 CHIẾN BINH TƯ DUY SIÊU CẤP"; rankBadge.style.color = "#f1c40f"; }
+    else { rankBadge.innerText = "⚓ THỦY THỦ TƯ DUY TIỀM NĂNG"; rankBadge.style.color = "#3b7dda"; }
+
+    document.getElementById('saveSection').style.display = 'flex';
+    renderLeaderboard();
+}
+
+function getScores() { return JSON.parse(localStorage.getItem('math_scores_p5') || '[]'); }
+
+function saveScore() {
+    const input = document.getElementById('playerName');
+    const name = input.value.trim() || 'Học sinh Lớp 5';
+    let scores = getScores(); scores.push({ name: name, score: gold });
+    scores.sort((a, b) => b.score - a.score); scores = scores.slice(0, 5);
+    localStorage.setItem('math_scores_p5', JSON.stringify(scores));
+    document.getElementById('saveSection').style.display = 'none';
+    renderLeaderboard();
+}
+
+function renderLeaderboard() {
+    const list = document.getElementById('leaderboardList');
+    const scores = getScores(); list.innerHTML = '';
+    if (scores.length === 0) { list.innerHTML = '<li style="color:#a0aec0;">Chưa có kỷ lục nào!</li>'; return; }
+    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+    scores.forEach((item, index) => {
+        const li = document.createElement('li'); li.className = 'leaderboard-item';
+        li.innerHTML = `<span>${medals[index]} ${item.name}</span><span style="color:var(--color-yellow);">${item.score} Vàng</span>`;
+        list.appendChild(li);
+    });
+}
+
+function resetGame() {
+    stopConfetti();
+    document.getElementById('endScreen').classList.remove('active');
+    document.getElementById('startScreen').classList.add('active');
+}
+</script>
+</body>
+</html>
